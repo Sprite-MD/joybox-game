@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counter</title>
+</head>
+<body>
+    <h2>Counter</h2>
+    <p>Current value: <span id="counter">{{ counter }}</span></p>
+    <button onclick="increaseCounter()">Increase</button>
+    <button onclick="resetCounter()">Reset</button>
+    <button onclick="spendCurrentValues()">Spend Current Values</button>
+    <button onclick="speedUpCounter()">Speed Up Counter (Cost: {{ speedUpCost }})</button>
+
+    <p>Total amount: <span id="total">{{ total }}</span></p>
+
+    <script>
+        var counterValue = {{ counter }}; // Initialize the counter value from Flask
+        var totalValue = {{ total }}; // Initialize the total value from Flask
+        var counterElement = document.getElementById('counter');
+        var totalElement = document.getElementById('total');
+        var speedUpCost = {{ speedUpCost }}; // Cost for speeding up the counter
+        var speedUpDuration = 10; // Duration for speeding up the counter in seconds
+
+        function increaseCounter() {
+            counterValue++;
+            totalValue++;
+            counterElement.innerText = counterValue;
+            totalElement.innerText = totalValue;
+        }
+
+        function resetCounter() {
+            counterValue = 0;
+            counterElement.innerText = counterValue;
+        }
+
+        function spendCurrentValues() {
+            // Calculate the probability based on the total value spent
+            var probability = totalValue * 0.01; // Adjust the factor as needed
+
+            // Check if the probability is within the limit (e.g., between 0 and 1)
+            if (probability > 1) {
+                probability = 1; // Cap the probability at 1
+            }
+
+            // Check if the special message is triggered based on the probability
+            if (Math.random() < probability) {
+                alert('Congratulations! You triggered a special message!');
+            }
+
+            // Reset the counter after spending
+            counterValue = 0;
+            counterElement.innerText = counterValue;
+
+            // Update the total after spending
+            totalValue -= counterValue;
+            totalElement.innerText = totalValue;
+        }
+        function speedUpCounter() {
+            if (counterValue >= speedUpCost) {
+                // Spend the required amount to speed up the counter
+                counterValue -= speedUpCost;
+                counterElement.innerText = counterValue;
+
+                // Increase the speed of the automatic point increase for a set duration
+                clearInterval(intervalId); // Clear existing interval
+                intervalId = setInterval(increaseCounter, 500); // Increase speed (500ms interval)
+
+                // After the duration, revert to the normal speed
+                setTimeout(() => {
+                    clearInterval(intervalId); // Clear the interval
+                    intervalId = setInterval(increaseCounter, 1000); // Revert to normal speed (1000ms interval)
+                }, speedUpDuration * 1000); // Convert duration to milliseconds
+            } else {
+                alert('Insufficient balance to speed up the counter.');
+            }
+        }
+
+        // Initialize the automatic point increase interval
+        intervalId = setInterval(increaseCounter, 1000); // Default speed (1000ms interval)
+    </script>
+</body>
+</html>

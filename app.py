@@ -1,24 +1,27 @@
 import sqlite3
-from flask import Flask, g
+from flask import Flask, request, jsonify, g, render_template, redirect, url_for, flash
+import hashlib
 
 DATABASE =  'database.db'
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'
+
 
 @app.route('/')
 def hello_world():
     return "hello"
-
-def get_db():
-    db = getattr(g, "_database", None)
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-    return db
 
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, "_database", None)
     if db is not None:
         db.close()
+
+def get_db():
+    db = getattr(g, "_database", None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+    return db
 
 def init_db():
     with app.app_context():
@@ -27,33 +30,16 @@ def init_db():
             db.cursor().executescript(f.read())
         db.commit()
 
-@app.route('/create_table')
-def create_table():
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS example (
-                      id INTEGER PRIMARY KEY,
-                      name TEXT NOT NULL)''')
-    db.commit()
-    return 'Table created successfully'
 
-@app.route('/insert_data')
-def insert_data():
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("INSERT INTO example (name) VALUES ('John')")
-    db.commit()
-    return 'Data inserted successfully'
-
-@app.route('/select_data')
-def select_data():
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM example")
-    data = cursor.fetchall()
-    return str(data)
-
+@app.route("/box")
+def box():
+# You can initialize the counter value and total value here
+    counter_value = 0
+    total_value = 0
+    speedCost = 10
+    
+    # Render the counter.html template, passing the counter and total values
+    return render_template('box.html', counter=counter_value, total=total_value, speedUpCost=speedCost)
 
 if __name__ == "__main__":
     app.run(debug=True)
-    init_db()
