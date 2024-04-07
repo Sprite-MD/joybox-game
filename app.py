@@ -26,6 +26,34 @@ def init_db():
         with app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
-        
+
+@app.route('/create_table')
+def create_table():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS example (
+                      id INTEGER PRIMARY KEY,
+                      name TEXT NOT NULL)''')
+    db.commit()
+    return 'Table created successfully'
+
+@app.route('/insert_data')
+def insert_data():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("INSERT INTO example (name) VALUES ('John')")
+    db.commit()
+    return 'Data inserted successfully'
+
+@app.route('/select_data')
+def select_data():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM example")
+    data = cursor.fetchall()
+    return str(data)
+
+
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
+    init_db()
